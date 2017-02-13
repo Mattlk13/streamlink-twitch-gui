@@ -1,43 +1,54 @@
-var PATH = require( "path" );
-var OS = require( "os" );
-var webpack = require( "webpack" );
-var SplitByPathPlugin = require( "webpack-split-by-path" );
-var HtmlWebpackPlugin = require( "html-webpack-plugin" );
-var CopyWebpackPlugin = require( "copy-webpack-plugin" );
-var ExtractTextPlugin = require( "extract-text-webpack-plugin" );
-var LessPluginCleanCSS = require( "less-plugin-clean-css" );
-var NwjsPlugin = require( "../common/nwjs-webpack-plugin" );
+const PATH = require( "path" );
+const OS = require( "os" );
+const webpack = require( "webpack" );
+//const SplitByPathPlugin = require( "webpack-split-by-path" );
+const HtmlWebpackPlugin = require( "html-webpack-plugin" );
+const CopyWebpackPlugin = require( "copy-webpack-plugin" );
+const ExtractTextPlugin = require( "extract-text-webpack-plugin" );
+const LessPluginCleanCSS = require( "less-plugin-clean-css" );
+const NwjsPlugin = require( "../common/nwjs-webpack-plugin" );
 
 
-var r = PATH.resolve;
-var j = PATH.join;
+const r = PATH.resolve;
 
 
 // path definitions
-var pRoot = r( ".", "src" );
-var pApp = r( pRoot, "app" );
-var pTest = r( pRoot, "test" );
-var pTestFixtures = r( pTest, "fixtures" );
-var pStyles = r( pRoot, "styles" );
-var pImages = r( pRoot, "img" );
-var pTemplates = r( pRoot, "templates" );
-var pModulesBower = r( ".", "bower_components" );
-var pModulesNpm = r( ".", "node_modules" );
+const pRoot = r( ".", "src" );
+const pApp = r( pRoot, "app" );
+const pTest = r( pRoot, "test" );
+const pTestFixtures = r( pTest, "fixtures" );
+const pStyles = r( pRoot, "styles" );
+const pImages = r( pRoot, "img" );
+const pTemplates = r( pRoot, "templates" );
+const pModulesBower = r( ".", "bower_components" );
+const pModulesNpm = r( ".", "node_modules" );
+const pCacheBabel = r( OS.tmpdir(), "babel-cache" );
+
+
+const resolveModuleDirectories = [
+	"web_modules",
+	"node_modules",
+	"bower_components"
+];
+const resolveLoaderModuleDirectories = [
+	"web_loaders",
+	...resolveModuleDirectories
+];
 
 
 // exclude modules/files from the js bundle
-var cssExtractTextPlugin  = new ExtractTextPlugin( "vendor.css" );
-var lessExtractTextPlugin = new ExtractTextPlugin( "main.css" );
+const cssExtractTextPlugin = new ExtractTextPlugin({
+	filename: "vendor.css"
+});
+const lessExtractTextPlugin = new ExtractTextPlugin({
+	filename: "main.css"
+});
 
 
-var commonLoaders = [
+const commonLoaders = [
 	{
 		test: /\.hbs$/,
 		loader: "hbs-loader"
-	},
-	{
-		test: /\.json$/,
-		loader: "json-loader"
 	},
 	{
 		test: /\.html$/,
@@ -51,55 +62,96 @@ var commonLoaders = [
 	{
 		test: /\.css$/,
 		include: pModulesBower,
-		loader: cssExtractTextPlugin.extract([
-			"css?sourceMap&-minify&-url&-import"
-		])
+		loader: cssExtractTextPlugin.extract({
+			use: [
+				{
+					loader: "css-loader",
+					options: {
+						sourceMap: true,
+						minify: false,
+						url: false,
+						import: false
+					}
+				}
+			]
+		})
 	},
 	// Application stylesheets (extract fonts and images)
 	{
 		test: /app\.less$/,
 		include: pStyles,
-		loader: lessExtractTextPlugin.extract([
-			"css?sourceMap&minify&url&-import",
-			"less?sourceMap&strictMath&strictUnits&relativeUrls&noIeCompat",
-			"flag-icons-loader",
-			"themes-loader"
-		])
+		loader: lessExtractTextPlugin.extract({
+			use: [
+				{
+					loader: "css-loader",
+					options: {
+						sourceMap: true,
+						minify: true,
+						url: true,
+						import: false
+					}
+				},
+				{
+					loader: "less-loader",
+					options: {
+						sourceMap: true,
+						strictMath: true,
+						strictUnits: true,
+						relativeUrls: true,
+						noIeCompat: true,
+						lessPlugins: [
+							new LessPluginCleanCSS({
+								advanced: true
+							})
+						]
+					}
+				},
+				{
+					loader: "flag-icons-loader"
+				},
+				{
+					loader: "themes-loader"
+				}
+			]
+		})
 	},
 	// Assets
 	{
 		test: /\.(jpe?g|png|svg|woff2)$/,
-		loader: "file?name=[path][name].[ext]"
+		loader: "file-loader",
+		options: {
+			name: "[path][name].[ext]"
+		}
 	}
 ];
 
 
 // only transpile code that isn't supported yet by the currently used NW.js release
-var loaderBabelDev = {
+const loaderBabelDev = {
 	test: /\.js$/,
 	exclude: [
 		pModulesNpm,
 		pModulesBower
 	],
-	loader: "babel",
-	query: {
+	loader: "babel-loader",
+	options: {
 		presets: [],
 		plugins: [
 			"babel-plugin-transform-es2015-modules-commonjs"
 		],
-		cacheDirectory: r( OS.tmpdir(), "babel-cache" )
+		cacheDirectory: pCacheBabel
 	}
 };
 
 // transpile everything to es5, so uglifyJS can optimize and minimize it
-var loaderBabelProd = {
+const loaderBabelProd = {
 	test: /\.js$/,
 	exclude: [
 		pModulesNpm,
 		pModulesBower
 	],
-	loader: "babel",
-	query: {
+	loader: "babel-loader",
+	options: {
 		presets: [],
 		plugins: [
 			"babel-plugin-transform-es2015-arrow-functions",
@@ -113,7 +165,7 @@ var loaderBabelProd = {
 			"babel-plugin-transform-es2015-spread",
 			"babel-plugin-transform-es2015-template-literals"
 		],
-		cacheDirectory: r( OS.tmpdir(), "babel-cache" )
+		cacheDirectory: pCacheBabel
 	}
 };
 
@@ -127,7 +179,7 @@ module.exports = {
 			children: false
 		},
 
-		context: j( ".", "src" ),
+		context: pRoot,
 
 		output: {
 			// name each file by their entry module name
@@ -140,11 +192,6 @@ module.exports = {
 		entry: "main",
 
 		resolve: {
-			modulesDirectories: [
-				"web_modules",
-				"node_modules",
-				"bower_components"
-			],
 			alias: {
 				// folder aliases
 				"root"        : pRoot,
@@ -172,12 +219,9 @@ module.exports = {
 		},
 
 		resolveLoader: {
-			root: pRoot,
-			modulesDirectories: [
-				"web_loaders",
-				"web_modules",
-				"node_loaders",
-				"node_modules"
+			modules: [
+				pRoot,
+				...resolveLoaderModuleDirectories
 			]
 		},
 
@@ -186,6 +230,7 @@ module.exports = {
 			new webpack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
 
 			// split into chunks by module path
+			/*
 			new SplitByPathPlugin([
 				{
 					name: "vendor.bower",
@@ -199,7 +244,10 @@ module.exports = {
 					name: "templates",
 					path: pTemplates
 				}
-			]),
+			], {
+				manifest: "index"
+			}),
+			*/
 
 			// don't include css stylesheets in the js bundle
 			cssExtractTextPlugin,
@@ -222,14 +270,20 @@ module.exports = {
 		},
 
 		resolve: {
-			root: pApp
+			modules: [
+				pApp,
+				...resolveModuleDirectories
+			]
 		},
 
 		target: "node-webkit",
 		devtool: "source-map",
 
 		module: {
-			loaders: [].concat( [ loaderBabelDev, ], commonLoaders )
+			rules: [
+				loaderBabelDev,
+				...commonLoaders
+			]
 		},
 
 		plugins: [
@@ -270,23 +324,29 @@ module.exports = {
 		},
 
 		resolve: {
-			root: pApp
+			modules: [
+				pApp,
+				...resolveModuleDirectories
+			]
 		},
 
 		target: "node-webkit",
 
 		module: {
-			loaders: [].concat( [ loaderBabelProd, ], commonLoaders, [
+			rules: [
+				loaderBabelProd,
+				...commonLoaders,
 				{
 					test: /\.svg$/,
-					loader: "svgo?" + JSON.stringify({
+					loader: "svgo-loader",
+					options: {
 						plugins: [
 							{ removeTitle: true },
 							{ removeUselessStrokeAndFill: false }
 						]
-					})
+					}
 				}
-			])
+			]
 		},
 
 		plugins: [
@@ -299,6 +359,10 @@ module.exports = {
 				inject: "head",
 				hash: false,
 				template: r( pRoot, "index.html" )
+			}),
+
+			new webpack.DefinePlugin({
+				DEBUG: false
 			}),
 
 			// use non-debug versions of ember and ember-data in production builds
@@ -326,24 +390,16 @@ module.exports = {
 			}),
 
 			// add license banner
-			new webpack.BannerPlugin([
-				"<%= main['display-name'] %>",
-				"@version v<%= package.version %>",
-				"@date <%= grunt.template.today('yyyy-mm-dd') %>",
-				"@copyright <%= package.author %>"
-			].join( "\n" ), {
+			new webpack.BannerPlugin({
+				banner: [
+					"<%= main['display-name'] %>",
+					"@version v<%= package.version %>",
+					"@date <%= grunt.template.today('yyyy-mm-dd') %>",
+					"@copyright <%= package.author %>"
+				].join( "\n" ),
 				entryOnly: true
 			})
-		],
-
-		// optimize css
-		lessLoader: {
-			lessPlugins: [
-				new LessPluginCleanCSS({
-					advanced: true
-				})
-			]
-		}
+		]
 	},
 
 
@@ -353,7 +409,10 @@ module.exports = {
 		},
 
 		resolve: {
-			root: pTest,
+			modules: [
+				pTest,
+				...resolveModuleDirectories
+			],
 			alias: {
 				"tests": r( pTest, "tests" )
 			}
@@ -362,7 +421,10 @@ module.exports = {
 		target: "node-webkit",
 
 		module: {
-			loaders: [].concat( [ loaderBabelDev, ], commonLoaders )
+			rules: [
+				loaderBabelDev,
+				...commonLoaders
+			]
 		},
 
 		plugins: [
@@ -393,7 +455,10 @@ module.exports = {
 		devtool: "source-map",
 
 		resolve: {
-			root: pTest,
+			modules: [
+				pTest,
+				...resolveModuleDirectories
+			],
 			alias: {
 				"tests": r( pTest, "tests" )
 			}
@@ -402,7 +467,10 @@ module.exports = {
 		target: "node-webkit",
 
 		module: {
-			loaders: [].concat( [ loaderBabelDev, ], commonLoaders )
+			rules: [
+				loaderBabelDev,
+				...commonLoaders
+			]
 		},
 
 		plugins: [
