@@ -10,9 +10,8 @@ import {
 	toggleVisibility,
 	setShowInTaskbar
 } from "nwjs/Window";
-import { isDebug } from "nwjs/debug";
-import { isWin, platform } from "utils/node/platform";
-import resolvePath from "utils/node/resolvePath";
+import { platform } from "utils/node/platform";
+import t from "translation-key";
 
 
 const { "display-name": displayName } = mainConfig;
@@ -20,7 +19,8 @@ const { icons: { tray: { [ platform ]: trayIcons } } } = filesConfig;
 
 
 export default EmberObject.extend( Evented, {
-	i18n: service(),
+	/** @type {IntlService} */
+	intl: service(),
 	settings: service(),
 
 	tray: null,
@@ -31,26 +31,20 @@ export default EmberObject.extend( Evented, {
 		nwWindow.window.addEventListener( "beforeunload", () => this._removeTray(), false );
 
 		// locale observer doesn't work without initializing the service injection
-		get( this, "i18n" );
+		get( this, "intl" );
 
 		// context menu
 		this._createMenu();
 
-		// tray icons on Windows require an absolute path
-		// TODO: rewrite this and also implement an icon resolver for Linux icon themes
+		// TODO: implement an icon resolver for Linux icon themes
 		this.icons = Object.assign( {}, trayIcons );
-		if ( isWin && !isDebug ) {
-			for ( const [ key, icon ] of Object.entries( this.icons ) ) {
-				this.icons[ key ] = resolvePath( "%NWJSAPPPATH%", icon );
-			}
-		}
 	},
 
 
 	/**
 	 * Rebuild the context menu on locale change
 	 */
-	_localeObserver: observer( "i18n.locale", function() {
+	_localeObserver: observer( "intl.locale", function() {
 		if ( !this.tray ) { return; }
 		this.menu.rebuild();
 	}),
@@ -72,14 +66,14 @@ export default EmberObject.extend( Evented, {
 	_createMenu() {
 		const items = [
 			{
-				label: [ "contextmenu.tray.toggle" ],
+				label: [ t`contextmenu.tray.toggle` ],
 				click: () => {
 					if ( !this.tray ) { return; }
 					this.trigger( "click" );
 				}
 			},
 			{
-				label: [ "contextmenu.tray.close" ],
+				label: [ t`contextmenu.tray.close` ],
 				click: () => nwWindow.close()
 			}
 		];

@@ -4,7 +4,6 @@ import { scheduleOnce } from "@ember/runloop";
 import { default as nwApp, quit } from "nwjs/App";
 import { default as nwWindow, setVisibility, setFocused } from "nwjs/Window";
 import { argv, parseCommand } from "nwjs/argv";
-import platformfixes from "./platformfixes";
 import onChangeIntegrations from "./integrations";
 import parameterActions from "./parameters";
 import windowInitializer from "./window";
@@ -17,7 +16,7 @@ const { logDebug, logError } = new Logger( "NWjs EmberJS initializer" );
 
 export default {
 	name: "nwjs",
-	after: "i18n",
+	after: "intl",
 
 	initialize( application ) {
 		/** @type {NwjsService} */
@@ -41,9 +40,6 @@ export default {
 		// initialize all the NWjs stuff
 		// and wait until Ember has started rendering and routing
 		settings.one( "initialized", async () => {
-			// try to fix issues on certain platforms first
-			platformfixes();
-
 			// load app theme
 			const themeService = application.lookup( "service:theme" );
 			themeService.initialize();

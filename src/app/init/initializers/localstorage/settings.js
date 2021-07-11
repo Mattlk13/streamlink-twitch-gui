@@ -1,12 +1,14 @@
 import { langs as langsConfig } from "config";
 import { moveAttributes, moveAttributesIntoFragment, qualityIdToName } from "./utils";
-import { defaultProvider } from "data/models/settings/streaming/fragment";
 import { typeKey as streamingPlayerTypeKey } from "data/models/settings/streaming/player/fragment";
 import { qualities } from "data/models/stream/model";
 import { isWin7 } from "utils/node/platform";
+import { streaming as streamingConfig } from "config";
 
 
 const { hasOwnProperty } = {};
+
+const { "default-provider": defaultProvider } = streamingConfig;
 
 
 function removeOldData( settings ) {
@@ -154,22 +156,49 @@ function fixAttributes( settings ) {
 	// translate old quality ID setting
 	qualityIdToName( streaming, qualities );
 
+	// translate old streaming providers data
+	if ( typeof streaming[ "providers" ] === "object" ) {
+		const { provider, providers } = streaming;
+		if ( hasOwnProperty.call( providers, "streamlinkw" ) ) {
+			providers[ "streamlink-python" ] = providers[ "streamlink" ];
+			providers[ "streamlink" ] = providers[ "streamlinkw" ];
+			delete providers[ "streamlinkw" ];
+		}
+		if ( provider === "streamlinkw" ) {
+			streaming.provider = "streamlink";
+		}
+	}
+
 	// translate old players data
 	fixStreamingPlayers( streaming, settings );
 
 	// fix old chat data
-	if ( hasOwnProperty.call( chat, "provider" ) && chat.provider === "default" ) {
+	if (
+		   hasOwnProperty.call( chat, "provider" )
+		&& [ "default", "msie" ].includes( chat.provider )
+	) {
 		chat.provider = "browser";
 	}
 
-	// remove unused or disabled streams language filters
-	if ( typeof streams.languages === "object" ) {
-		for ( const [ code ] of Object.entries( streams.languages ) ) {
-			const lang = langsConfig[ code ];
-			if ( !lang || lang.disabled ) {
-				delete streams.languages[ code ];
-			}
-		}
+	// update old language filter
+	if ( hasOwnProperty.call( streams, "filter_languages" ) ) {
+		const value = streams.filter_languages;
+		// can't translate null or false value here due to lack of schema version
+		streams.languages_fade = value === 1;
+		streams.languages_filter = value === 2 || value === true;
+		delete streams.filter_languages;
+	}
+	// find single language selection and update the new old languages object
+	if ( hasOwnProperty.call( streams, "language" ) ) {
+		const language = streams.language;
+		streams.languages = Object.entries( langsConfig )
+			.reduce( ( obj, [ key, { disabled } ] ) => {
+				if ( !disabled ) {
+					obj[ key ] = key === language;
+				}
+				return obj;
+			}, {} );
+		delete streams.language;
 	}
 
 	// rename old notification provider names

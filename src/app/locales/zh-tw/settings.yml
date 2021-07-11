@@ -6,8 +6,8 @@ menu:
     player: 播放器
     streams: 實況
     chat: 聊天室
-    lists: 列表
     languages: 語言
+    hotkeys: 快捷鍵
     notifications: 通知
     channels: 頻道設定
 main:
@@ -16,7 +16,7 @@ main:
         description: 設定介面語系
         notes: 你會其他種語言嗎？請協助翻譯吧！詳情請參考 wiki 上的資訊
         labels:
-            auto: "系統預設 ({{label}})"
+            auto: "系統預設 ({label})"
     advanced:
         title: 設定及功能
         description: 啟用隱藏設定及功能
@@ -83,10 +83,10 @@ streaming:
         description: 選擇一個串流提供元件並設定執行檔路徑
         notes: 若系統路徑 $PATH 或程式介面搜尋路徑找不到，則需手動指定執行檔路徑
         executable:
-            python: Python 執行檔
-            streamlinkw: Streamlink 執行檔
+            streamlink: Streamlink 執行檔
+            streamlink-python: Python 執行檔
         python-script:
-            streamlink: Streamlink python 腳本
+            streamlink-python: Streamlink python 腳本
         parameters:
             title: 自訂參數
             placeholder: 加入自訂參數
@@ -106,7 +106,12 @@ streaming:
                 description: 開啟一個本地 HTTP 伺服器讓播放器讀取
             passthrough:
                 label: HLS (passthrough)
-                description: 讓播放器自下載及緩衝串流
+                description: 讓播放器自己下載及緩衝串流
+    low-latency:
+        title: 低延遲串流
+        description: 頻道如果有開啟低延遲模式，會降低串流的延遲
+        notes: 此設定會將 live-edge 限制為 2 (如果原設定較高的話)，可能會對一般模式的頻道造成緩衝現象。為了要達成低延遲串流，可能需要調整播放器的快取/緩衝設定。
+        checkbox: 啟用低延遲串流
     hls-live-edge:
         title: HLS live edge
         description: 數值越小串流延遲越小，但可能會造成播放器緩衝
@@ -116,7 +121,7 @@ streaming:
     player-no-close:
         title: 保留播放器視窗
         description: 當串流結束後保留播放器
-        notes: 播放器可能會阻擋 {{provider}} 關閉它，請參考播放器設定
+        notes: 播放器可能會阻擋 {provider} 關閉它，請參考播放器設定
         checkbox: 不要關閉播放器
     disable-ads:
         title: 廣告
@@ -200,6 +205,10 @@ player:
                     title: 播放器排版
                     description: 不要顯示播放器的裝飾
                     checkbox: 最小化播放器排版
+                no-keepaspect-window:
+                    title: 視窗長寬比
+                    description: 內容沒有填滿播放器視窗時，用黑色背景取代
+                    checkbox: 不限制視窗長寬比
                 window:
                     title: 強制顯示視窗
                     description: 修正只有音訊的實況可能會造成的問題
@@ -234,10 +243,6 @@ streams:
         description: 使用畫質範圍設定或是特定的畫質設定
         notes: 第2欄顯示實際選擇的畫質，從"最佳畫質"到"最差畫質"中排除第1欄中指定的畫質或畫質範圍，修改前請先查詢 wiki 及 Streamlink 的文件
         dont-exclude: 不排除實況畫質
-    vodcast-regexp:
-        title: 自訂 Vodcast 過濾
-        description: 尋找未標籤的 VOD/重播
-        notes: 使用 JavaScript 的正規表達式(區分大小寫) 來過濾實況標題，使用空字串來停用過濾
     modal-close-launch:
         title: 隱藏實況對話框
         description: 當打開實況時會彈出對話框
@@ -246,6 +251,51 @@ streams:
         title: 關閉實況對話框
         description: 當實況結束時關閉對話框
         checkbox: 當實況結束時自動關閉對話框
+    channelname:
+        title: 自訂頻道名稱
+        description: 頻道名稱在地化
+        values:
+            custom: 顯示自訂名稱
+            original: 顯示原始頻道名稱
+            both: 全部顯示
+    show-flag:
+        title: 旗幟
+        description: 標示實況主的語言
+        checkbox: 總是顯示旗幟
+    filter-vodcast:
+        title: 淡出重播頻道 (Vodcasts)
+        description: 使重播頻道較不明顯
+        checkbox: 淡出重播頻道
+    vodcast-regexp:
+        title: 自訂 Vodcast 過濾
+        description: 尋找未標籤的 VOD/重播
+        notes: 使用 JavaScript 的正規表達式(區分大小寫) 來過濾實況標題，使用空字串來停用過濾
+    show-info:
+        title: 資訊列
+        description: 實況預覽圖下方的資訊列
+        checkbox: 永遠顯示資訊列
+    info:
+        title: 資訊列內容
+        description: 資訊列要顯示什麼？
+        values:
+            game: 正在玩的遊戲
+            title: 實況標題
+    uptime-hours-only:
+        title: 串流上線時間格式
+        description: 以小時或天數顯示串流上線時間
+        checkbox: 忽略天數，以時數加總顯示
+    click:
+        title: 點擊行為
+        description: 實況預覽圖的額外點擊動作
+        ctrl: Ctrl + 滑鼠主要按鈕
+        cmd: CMD + 滑鼠主要按鈕
+        middle: 滑鼠中鍵
+        values:
+            noop: 不動作
+            launch: 開啟實況
+            chat: 開啟聊天室
+            channel: 移至頻道資訊頁
+            settings: 移至頻道設定頁
 chat:
     provider:
         title: 聊天室軟體
@@ -300,12 +350,12 @@ chat:
                     url:
                         title: 聊天室網址
                         description: 要打開何種 Twitch 聊天室網址
-            msie:
-                label: Internet Explorer
+            chatterino:
+                label: Chatterino
                 attributes:
-                    url:
-                        title: 聊天室網址
-                        description: 要打開何種 Twitch 聊天室網址
+                    exec:
+                        title: Chatterino 執行檔路徑
+                        description: 設定 Chatterino 執行檔路徑
             chatty:
                 label: Chatty
                 attributes:
@@ -364,62 +414,88 @@ chat:
         title: Twitch 表情
         description: 打開 twitchemotes.com 的按鈕
         checkbox: 在實況對話框顯示表情按鈕
-lists:
-    channelname:
-        title: 自訂頻道名稱
-        description: 頻道名稱在地化
-        values:
-            custom: 顯示自訂名稱
-            original: 顯示原始頻道名稱
-            both: 全部顯示
-    show-flag:
-        title: 旗幟
-        description: 標示實況主的語言
-        checkbox: 總是顯示旗幟
-    filter-vodcast:
-        title: 淡出重播頻道 (Vodcasts)
-        description: 使重播頻道較不明顯
-        checkbox: 淡出重播頻道
-    show-info:
-        title: 資訊列
-        description: 實況預覽圖下方的資訊列
-        checkbox: 永遠顯示資訊列
-    info:
-        title: 資訊列內容
-        description: 資訊列要顯示什麼？
-        values:
-            game: 正在玩的遊戲
-            title: 實況標題
-    click:
-        title: 點擊行為
-        description: 實況預覽圖的額外點擊動作
-        ctrl: Ctrl + 滑鼠主要按鈕
-        cmd: CMD + 滑鼠主要按鈕
-        middle: 滑鼠中鍵
-        values:
-            noop: 不動作
-            launch: 開啟實況
-            chat: 開啟聊天室
-            channel: 移至頻道資訊頁
-            settings: 移至頻道設定頁
 languages:
     filter:
         title: 過濾實況
         description: 使用語言來過濾所有實況列表 (已追蹤的除外)
-        notes: 我的實況不受影響
         values:
             fade:
-                text: 淡出實況頻道
-                description: 顯示所有實況，未選擇的語言頻道淡出
+                text: 淡出實況
+                description: |
+                    顯示所有實況，不符合設定語系的實況淡出顯示<br>
+                    至少要選擇一項且需停用過濾器
             filter:
                 text: 過濾顯示實況頻道
-                description: 只顯示所選語言的頻道
+                description: |
+                    只顯示所選語言的頻道<br>
+                    只選一個選項，並優先於淡出設定
     languages:
         title: 語言
         description: 實況主語言，若未設定，則為頻道語言
-        notes: 選擇所有語言來關閉過濾功能
-        check-all: 全部勾選
         uncheck-all: 全部取消
+hotkeys:
+    navigation:
+        title: 導航
+        description: 全域導航快捷鍵
+        notes: |
+            快捷鍵會根據元件做分類，每個動作都有可獨立啟停用或自訂鍵位的主快捷鍵及副快捷鍵，需取得視窗焦點才能使用快捷鍵<br><br>
+            另外請注意，目前快捷鍵還沒辦法知道系統的鍵盤佈局 (因技術問題)，所以目前所有的快捷鍵都是依照美式鍵盤佈局(QWERTY)，且若系統使用不同鍵盤佈局，有些獨立按鍵可能會顯示不正確
+        actions:
+            refresh: 重新整理
+            historyBack: 上一頁
+            historyForward: 下一頁
+            homepage: 回首頁
+            routeFeatured: 跳到精選實況
+            routeGames: 跳到遊戲實況
+            routeStreams: 跳到實況列表
+            routeUserFollowedStreams: 跳到追隨中實況
+            routeUserFollowedChannels: 跳到追隨中頻道
+            routeUserAuth: 跳到使用者
+            routeWatching: 跳到正在收看
+            routeSettings: 跳到設定
+            routeAbout: 跳到關於
+    searchbar:
+        title: 搜尋列
+        description: 上方的搜尋列
+        actions:
+            focus: 焦點
+    followbutton:
+        title: 追隨按鈕
+        description: 在頻道頁或實況對話框上面的追隨按鈕
+        actions:
+            default: 追隨或停止追隨
+            confirm: 確認
+    openchatbutton:
+        title: 聊天室按鈕
+        description: 在頻道頁或實況對話框上面的聊天室按鈕
+        actions:
+            default: 開啟聊天室
+    sharechannelbutton:
+        title: 分享頻道按鈕
+        description: 在頻道頁或實況對話框上面的分享頻道按鈕
+        actions:
+            default: 複製頻道網址
+    twitchemotesbutton:
+        title: Twitch 表情按鈕
+        description: 在頻道頁或實況對話框上面的表情按鈕
+        actions:
+            default: 開啟 Twitchemotes.com
+    modaldialog:
+        title: 對話框
+        description: 彈出對話框
+        actions:
+            close: 關閉
+    modalconfirm:
+        title: 確認對話框
+        description: 訊息需要確認時
+        actions:
+            confirm: 確認
+    modalstreaming:
+        title: 實況對話框
+        description: 收看實況時
+        actions:
+            shutdown: 中斷目前實況
+            log: 切換顯示記錄
 notifications:
     enabled:
         title: 桌面通知

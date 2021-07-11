@@ -134,7 +134,7 @@ test( "Spawn parameters", async function( assert ) {
 		this.spawnStub.args,
 		[[
 			{ exec: "foo" },
-			[ "--version", "--no-version-check" ]
+			[ "--version" ]
 		]],
 		"Calls spawn with correct arguments"
 	);
@@ -268,7 +268,7 @@ test( "Version match", async function( assert ) {
 	};
 
 	const provider = { type: "streamlink", flavor: "default" };
-	const minVersion = "1.3.0";
+	const minVersion = "2.0.0";
 	const versionStrings = [
 		[
 			"streamlink {v}\n",

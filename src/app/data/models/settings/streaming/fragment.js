@@ -3,15 +3,12 @@ import attr from "ember-data/attr";
 import Fragment from "ember-data-model-fragments/fragment";
 import { fragment } from "ember-data-model-fragments/attributes";
 import { streaming as streamingConfig } from "config";
-import { isWin } from "utils/node/platform";
 
 
 const { equal } = computed;
-const { providers } = streamingConfig;
+const { providers, "default-provider": defaultProvider } = streamingConfig;
 const { MAX_SAFE_INTEGER: MAX } = Number;
 
-
-export const defaultProvider = isWin ? "streamlinkw" : "streamlink";
 
 export const ATTR_STREAMING_PLAYER_INPUT_STDIN = "stdin";
 export const ATTR_STREAMING_PLAYER_INPUT_FIFO = "fifo";
@@ -29,6 +26,7 @@ export default Fragment.extend({
 	player: attr( "string", { defaultValue: "default" } ),
 	players: fragment( "settingsStreamingPlayers", { defaultValue: {} } ),
 
+	low_latency: attr( "boolean", { defaultValue: false } ),
 	disable_ads: attr( "boolean", { defaultValue: false } ),
 	player_input: attr( "string", { defaultValue: ATTR_STREAMING_PLAYER_INPUT_STDIN } ),
 	player_no_close: attr( "boolean", { defaultValue: false } ),

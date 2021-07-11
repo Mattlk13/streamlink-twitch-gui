@@ -1,4 +1,4 @@
-import { get, computed } from "@ember/object";
+import { computed } from "@ember/object";
 import { inject as service } from "@ember/service";
 import { streaming as streamingConfig } from "config";
 import ExternalLinkComponent from "../external-link/component";
@@ -10,16 +10,16 @@ const { "docs-url": docsUrl } = streamingConfig;
 
 
 export default ExternalLinkComponent.extend({
-	i18n: service(),
+	/** @type {IntlService} */
+	intl: service(),
+	/** @type {SettingsService} */
 	settings: service(),
 
 	layout,
 
 	// default baseUrl
-	baseUrl: computed( "settings.streaming.providerType", function() {
-		const type = get( this, "settings.streaming.providerType" );
-
-		return docsUrl[ type ];
+	baseUrl: computed( "settings.content.streaming.providerType", function() {
+		return docsUrl[ this.settings.content.streaming.providerType ];
 	}),
 
 	tagName: "span",
@@ -33,19 +33,23 @@ export default ExternalLinkComponent.extend({
 	],
 
 	class: "",
-	title: computed( "i18n.locale", "baseUrl", function() {
-		return get( this, "baseUrl" )
-			? get( this, "i18n" ).t( "components.documentation-link.title" )
+	title: computed( "intl.locale", "baseUrl", function() {
+		return this.baseUrl
+			? this.intl.t( "components.documentation-link.title" )
 			: "";
 	}),
 
 	url: computed( "baseUrl", "item", function() {
-		const baseUrl = get( this, "baseUrl" );
-		const item = get( this, "item" );
+		const { baseUrl, item } = this;
+
+		if ( !baseUrl ) {
+			return null;
+		}
+
 		let itemUrl = encodeURIComponent( item );
 
 		// remove leading double dash from Streamlink documentation links
-		if ( get( this, "settings.streaming.isStreamlink" ) ) {
+		if ( this.settings.content.streaming.isStreamlink ) {
 			itemUrl = itemUrl.replace( /^-/, "" );
 		}
 

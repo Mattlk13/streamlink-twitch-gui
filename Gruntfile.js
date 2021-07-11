@@ -13,6 +13,9 @@ module.exports = function( grunt ) {
 		overridePath: r( "build", "tasks", "configs" ),
 		configPath: r( "src", "config" ),
 
+		// additional config variables, eg. `version = $(git describe --tags --dirty)`
+		postProcess: require( r( "build", "tasks", "common", "post-config" ) ),
+
 		data: {
 			dir: {
 				root: r( "." ),
@@ -25,7 +28,6 @@ module.exports = function( grunt ) {
 				tmp_test: r( "build", "tmp", "test" ),
 				tmp_coverage: r( "build", "tmp", "coverage" ),
 				tmp_installer: r( "build", "tmp", "installer" ),
-				travis: r( "build", "travis" ),
 				dist: r( "dist" )
 			}
 		},

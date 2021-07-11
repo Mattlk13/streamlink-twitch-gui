@@ -1,5 +1,5 @@
-import { get, set } from "@ember/object";
-import { on } from "@ember/object/evented";
+import { set } from "@ember/object";
+import { addListener } from "@ember/object/events";
 import attr from "ember-data/attr";
 import Model from "ember-data/model";
 import { fragment } from "ember-data-model-fragments/attributes";
@@ -15,46 +15,39 @@ export default Model.extend({
 	streams: fragment( "settingsStreams", { defaultValue: {} } ),
 	chat: fragment( "settingsChat", { defaultValue: {} } ),
 	notification: fragment( "settingsNotification", { defaultValue: {} } ),
+	hotkeys: fragment( "settingsHotkeys", { defaultValue: {} } ),
 
 
 	init() {
 		this._super( ...arguments );
 
 		/*
-		 * Define hasStreamsLanguagesSelection on the Settings model instead of the
-		 * SettingsStreamsLanguages fragment, because we need to listen to the ready and didUpdate
-		 * events of the Settings model.
+		 * Define this on the Settings model instead of the SettingsStreamsLanguages fragment,
+		 * because we need to listen to the ready and didUpdate events of the Settings model.
 		 * Use an object property descriptor to set enumerable to false, so that it is not included
 		 * in the SettingsController's model object buffer.
 		 */
-		Object.defineProperty( this, "hasStreamsLanguagesSelection", {
+		Object.defineProperty( this, "hasAnyStreamsLanguagesSelection", {
 			enumerable: false,
 			writable: true,
 			value: false
 		});
-	},
+		Object.defineProperty( this, "hasSingleStreamsLanguagesSelection", {
+			enumerable: false,
+			writable: true,
+			value: false
+		});
 
-	_hasStreamsLanguagesSelection: on( "ready", "didUpdate", function() {
-		let ret = false;
+		const update = () => {
+			const data = this.streams.languages.toJSON();
+			const num = Object.values( data ).filter( Boolean ).length;
+			set( this, "hasAnyStreamsLanguagesSelection", num > 0 );
+			set( this, "hasSingleStreamsLanguagesSelection", num === 1 );
+		};
 
-		const fragment = get( this, "streams.languages" );
-		if ( fragment ) {
-			const languages = fragment.toJSON();
-			const keys = Object.entries( languages );
-			if ( keys.length ) {
-				let [ , previous ] = keys.shift();
-				for ( const [ , key ] of keys ) {
-					if ( previous !== key ) {
-						ret = true;
-						break;
-					}
-					previous = key;
-				}
-			}
-		}
-
-		return set( this, "hasStreamsLanguagesSelection", ret );
-	})
+		addListener( this, "ready", update );
+		addListener( this, "didUpdate", update );
+	}
 
 }).reopenClass({
 	toString() { return "Settings"; }

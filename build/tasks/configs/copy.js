@@ -1,25 +1,12 @@
 module.exports = {
-	win32scripts: {
-		expand : true,
-		flatten: true,
-		src    : "<%= dir.resources %>/windows/*",
-		dest   : "<%= dir.releases %>/<%= package.name %>/win32/"
-	},
-	win64scripts: {
-		expand : true,
-		flatten: true,
-		src    : "<%= dir.resources %>/windows/*",
-		dest   : "<%= dir.releases %>/<%= package.name %>/win64/"
-	},
-
-	linux32scripts: {
+	scripts_linux32: {
 		options: { mode: 0o755 },
 		expand : true,
 		flatten: true,
 		src    : "<%= dir.resources %>/linux/*.sh",
 		dest   : "<%= dir.releases %>/<%= package.name %>/linux32/"
 	},
-	linux64scripts: {
+	scripts_linux64: {
 		options: { mode: 0o755 },
 		expand : true,
 		flatten: true,
@@ -27,16 +14,29 @@ module.exports = {
 		dest   : "<%= dir.releases %>/<%= package.name %>/linux64/"
 	},
 
-	linux32icons: {
+	icons_linux32: {
 		expand : true,
 		flatten: true,
 		src    : "<%= dir.resources %>/icons/*.png",
 		dest   : "<%= dir.releases %>/<%= package.name %>/linux32/icons/"
 	},
-	linux64icons: {
+	icons_linux64: {
 		expand : true,
 		flatten: true,
 		src    : "<%= dir.resources %>/icons/*.png",
 		dest   : "<%= dir.releases %>/<%= package.name %>/linux64/icons/"
+	},
+
+	assets_linux32: {
+		expand : true,
+		flatten: true,
+		src    : "<%= dir.resources %>/linux/*.!(sh)",
+		dest   : "<%= dir.releases %>/<%= package.name %>/linux32/"
+	},
+	assets_linux64: {
+		expand : true,
+		flatten: true,
+		src    : "<%= dir.resources %>/linux/*.!(sh)",
+		dest   : "<%= dir.releases %>/<%= package.name %>/linux64/"
 	}
 };

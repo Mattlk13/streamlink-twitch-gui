@@ -1,31 +1,37 @@
-import { get, computed } from "@ember/object";
+import { computed } from "@ember/object";
 import Mixin from "@ember/object/mixin";
 import { inject as service } from "@ember/service";
 
 
 export default Mixin.create({
+	/** @type {SettingsService} */
 	settings: service(),
 
-	broadcaster_language: computed(
-		"settings.streams.filter_languages",
-		"settings.streams.languages",
+	language: computed(
+		"settings.content.hasSingleStreamsLanguagesSelection",
+		"settings.content.streams.languages_filter",
+		"settings.content.streams.languages",
 		function() {
-			if ( !get( this, "settings.streams.filter_languages" ) ) { return; }
+			const settings = this.settings.content;
+			const { languages_filter, languages } = settings.streams;
 
-			const filters = get( this, "settings.streams.languages" ).toJSON();
-			const keys = Object.keys( filters );
-			const filtered = keys.filter( lang => filters[ lang ] );
+			if ( languages_filter && settings.hasSingleStreamsLanguagesSelection ) {
+				for ( const [ key, value ] of Object.entries( languages.toJSON() ) ) {
+					if ( value ) {
+						return key;
+					}
+				}
+			}
 
-			// ignore if all languages are (un)checked
-			return filtered.length > 0 && filtered.length !== keys.length
-				? filtered.join( "," )
-				: undefined;
+			return undefined;
 		}
 	),
 
 	model( params ) {
-		const broadcaster_language = get( this, "broadcaster_language" );
+		const { language } = this;
 
-		return this._super( Object.assign( params || {}, { broadcaster_language } ) );
+		return this._super(
+			Object.assign( params || /* istanbul ignore next */ {}, { language } )
+		);
 	}
 });

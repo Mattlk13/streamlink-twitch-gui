@@ -1,20 +1,33 @@
 import Helper from "@ember/component/helper";
-import { get, observer } from "@ember/object";
 import { inject as service } from "@ember/service";
-import formatTitle from "services/hotkey/title";
 
 
 export const helper = Helper.extend({
-	i18n: service(),
+	/** @type {HotkeyService} */
+	hotkey: service(),
+	/** @type {IntlService} */
+	intl: service(),
 
-	compute( [ keyTitle, hotkey ], properties ) {
-		const i18n = get( this, "i18n" );
-		const title = i18n.t( keyTitle, properties ).toString();
-
-		return formatTitle( i18n, title, hotkey );
+	init() {
+		this._super( ...arguments );
+		// initialize computed property of injected service to make the observer work
+		this.get( "intl" );
+		this.addObserver( "intl.locale", this, "recompute" );
 	},
 
-	_localeObserver: observer( "i18n.locale", function() {
-		this.recompute();
-	})
+	compute( positional, { hotkey, context, namespace, action, title } ) {
+		if ( action ) {
+			if ( context ) {
+				hotkey = this.hotkey.getHotkeyDataByContext( context, action );
+			} else if ( namespace ) {
+				hotkey = this.hotkey.getHotkeyData( namespace, action );
+			}
+		}
+
+		title = title ? String( title ) : "";
+
+		return hotkey
+			? this.hotkey.formatTitle( hotkey, title )
+			: title;
+	}
 });

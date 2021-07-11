@@ -1,49 +1,59 @@
 module.exports = {
-	win32archive: {
-		platform: "win32",
-		tasks: [ "compress:win32" ],
-		checksum: "<%= compress.win32.options.archive %>"
-	},
-	win64archive: {
-		platform: "win64",
-		tasks: [ "compress:win64" ],
-		checksum: "<%= compress.win64.options.archive %>"
-	},
+	options: {
+		archive_win32: {
+			platform: "win32",
+			tasks: [ "shell:archive_win32" ],
+			checksum: "<%= compress.win32.output %>"
+		},
+		archive_win64: {
+			platform: "win64",
+			tasks: [ "shell:archive_win64" ],
+			checksum: "<%= compress.win64.output %>"
+		},
+		archive_osx64: {
+			platform: "osx64",
+			tasks: [ "shell:archive_osx64" ],
+			checksum: "<%= compress.osx64.output %>"
+		},
+		archive_linux32: {
+			platform: "linux32",
+			tasks: [ "shell:archive_linux32" ],
+			checksum: "<%= compress.linux32.output %>"
+		},
+		archive_linux64: {
+			platform: "linux64",
+			tasks: [ "shell:archive_linux64" ],
+			checksum: "<%= compress.linux64.output %>"
+		},
 
-	osx64archive: {
-		platform: "osx64",
-		tasks: [ "shell:compressMacOSarchive" ],
-		checksum: "<%= compress.osx64.options.archive %>"
-	},
+		installer_win32: {
+			platform: "win32",
+			tasks: [
+				"clean:installer_win32",
+				"template:installer_win32",
+				"shell:installer_win32"
+			],
+			checksum: "<%= dir.dist %>/<%= template.installer_win32.options.data.filename %>"
+		},
+		installer_win64: {
+			platform: "win64",
+			tasks: [
+				"clean:installer_win64",
+				"template:installer_win64",
+				"shell:installer_win64"
+			],
+			checksum: "<%= dir.dist %>/<%= template.installer_win64.options.data.filename %>"
+		},
 
-	linux32archive: {
-		platform: "linux32",
-		tasks: [ "compress:linux32" ],
-		checksum: "<%= compress.linux32.options.archive %>"
-	},
-	linux64archive: {
-		platform: "linux64",
-		tasks: [ "compress:linux64" ],
-		checksum: "<%= compress.linux64.options.archive %>"
-	},
-
-	win32installer: {
-		platform: "win32",
-		tasks: [
-			"clean:win32installer",
-			"template:win32installer",
-			"shell:win32installer"
-		],
-		checksum: "<%= dir.dist %>/<%= template.win32installer.options.data.filename %>"
-	},
-
-	win64installer: {
-		platform: "win64",
-		tasks: [
-			"clean:win64installer",
-			"template:win64installer",
-			"shell:win64installer"
-		],
-		checksum: "<%= dir.dist %>/<%= template.win64installer.options.data.filename %>"
+		appimage_linux32: {
+			platform: "linux32",
+			tasks: [ "shell:appimage_linux32" ],
+			checksum: "<%= appimage.linux32.output %>"
+		},
+		appimage_linux64: {
+			platform: "linux64",
+			tasks: [ "shell:appimage_linux64" ],
+			checksum: "<%= appimage.linux64.output %>"
+		}
 	}
 };

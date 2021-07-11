@@ -33,12 +33,14 @@ export default Fragment.extend({
 	filter_vodcast: attr( "boolean", { defaultValue: true } ),
 	vodcast_regexp: attr( "string", { defaultValue: "" } ),
 
-	filter_languages: attr( "boolean", { defaultValue: false } ),
+	languages_fade: attr( "boolean", { defaultValue: false } ),
+	languages_filter: attr( "boolean", { defaultValue: false } ),
 	languages: fragment( "settingsStreamsLanguages", { defaultValue: {} } ),
 
 	show_flag: attr( "boolean", { defaultValue: false } ),
 	show_info: attr( "boolean", { defaultValue: false } ),
 	info: attr( "number", { defaultValue: ATTR_STREAMS_INFO_TITLE } ),
+	uptime_hours_only: attr( "boolean", { defaultValue: false } ),
 
 	click_middle: attr( "number", { defaultValue: ATTR_STREAMS_CLICK_CHAT } ),
 	click_modify: attr( "number", { defaultValue: ATTR_STREAMS_CLICK_SETTINGS } )
@@ -49,11 +51,6 @@ export default Fragment.extend({
 		{ id: ATTR_STREAMS_NAME_BOTH, label: "both" },
 		{ id: ATTR_STREAMS_NAME_CUSTOM, label: "custom" },
 		{ id: ATTR_STREAMS_NAME_ORIGINAL, label: "original" }
-	],
-
-	filterLanguages: [
-		{ id: false, label: "fade" },
-		{ id: true, label: "filter" }
 	],
 
 	info: [

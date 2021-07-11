@@ -1,13 +1,14 @@
 error:
     header: Erreur
-    text: Une erreur est survenue en tente d'afficher cette page.
+    text: Une erreur est survenue en tentant d'afficher cette page.
 about:
     about:
         header: À propos
         homepage: Page d'accueil
-        author: Autueur
+        author: Auteur
         version: Version
         nwjs: NW.js
+        platform: Plate-forme
         arch: Architecture
         built: Built
         help: Aide
@@ -28,7 +29,7 @@ about:
 featured:
     header: Chaînes mises en avant
     empty: La liste des chaînes mises en avant n'a pas pu être chargée!
-    summary: Il y actuellement {{viewers}} personnes en train de regarder {{channels}} !
+    summary: Il y actuellement {viewers} personnes en train de regarder {channels} !
 games:
     header: Top Jeux
     empty: La liste des top jeux retournée est vide.
@@ -49,30 +50,30 @@ channel:
             title: Nom
         created-at:
             title: Crée
-            # new Moment(channel.created_at).format(...)
-            format: "LL"
+            format: "{created_at, date, long}"
         language:
             title: Langue
         followers:
             title: Followers
-            data: "{{followers}} ({{day}} par jour)"
+            data: "{followers} ({day} par jour)"
         views:
             title: Vues
-            data: "{{views}} ({{day}} par jour)"
+            data: "{views} ({day} par jour)"
         content:
             title: Contenu
             mature: Inadapté aux enfants
             ffa: Pas de restriction d'âge
         format:
             title: Format
-            data: "{{resolution}} @ {{fps}}fps"
+            data: "{resolution} @ {fps}fps"
         delay:
             title: Délai
-            # static "zero" property
-            data:
-                zero: Pas de délai additionnel
-                one: Une seconde
-                other: "{{count}} secondes"
+            data: |
+                {count, plural,
+                    =0 {Pas de délai additionnel}
+                    one {Une seconde}
+                    other {# secondes}
+                }
         vodcast:
             title: Vodcast
             data: Le stream est un vodcast
@@ -84,6 +85,14 @@ channel:
             quality:
                 title: Qualité
                 description: Configurer la qualité d'un stream spécifique.
+            low-latency:
+                title: Streaming latence basse
+                description: Remplacer les paramètres globaux de streaming en latence basse.
+                checkbox: Activer le streaming en latence basse
+            disable-ads:
+                title: Publicités
+                description: Remplacer les paramètres globaux de publicités.
+                checkbox: Ignorer les publicités intégrées dans les flux
             chat:
                 title: Chat
                 description: Ouvrir automatiquement le chat.
@@ -92,16 +101,14 @@ channel:
             header: Notifications sur le Bureau
             enabled:
                 title: Notifications
-                description: Quand le strea commence.
+                description: Quand le stream commence.
                 notes: Il faut suivre la chaîne.
                 checkbox: Activer les notifications sur le Bureau
 team:
     header:
-        members: "Membres de l'équipe: {{num}}"
-        # new Moment(team.created_at).format(...)
-        created-at: "[Créée le:] llll"
-        # new Moment(team.updated_at).format(...)
-        updated-at: "[Dernière modification le:] llll"
+        members: "Membres de l'équipe: {num}"
+        created-at: "Créée le: {created_at, date, full}"
+        updated-at: "Dernière modification le: {updated_at, date, full}"
     menu:
         live: Membres en live
         all: Tous les membres
@@ -114,9 +121,8 @@ team:
         header: Infos
 user:
     index:
-        logged-in: "Connecté(e) en tant que {{name}}"
-        # new Moment(auth.session.date).format(...)
-        since: "[since] LLLL"
+        logged-in: "Connecté(e) en tant que {name}"
+        since: "since {since, date, full}"
         sign-out: Se déconnecter
         token:
             title: Votre token d'accès
@@ -149,7 +155,7 @@ user:
             sort-by-login: Trier par la date de dernière connexion
             sort-desc: Trier par ordre décroissant
             sort-asc: Trier par ordre croissant
-        empty: La liste retournée des chînes suivie est vide.
+        empty: La liste retournée des chaînes suivie est vide.
 search:
     header:
         all: Tous les résultat de la recherche
@@ -167,7 +173,7 @@ watching:
         open: Ouvrir la boite de dialogue
         close: Fermer le stream
     empty:
-        header: Tous les stream ont été fermés
+        header: Tous les streams ont été fermés
         next: Que faire ensuite ?
-        featured: Regarder les stream actuellement mis en avant
-        followed: Regardez vos stream suivis
+        featured: Regarder les streams actuellement mis en avant
+        followed: Regardez vos streams suivis

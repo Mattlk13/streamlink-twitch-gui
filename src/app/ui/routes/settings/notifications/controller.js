@@ -1,17 +1,18 @@
 import Controller from "@ember/controller";
 import { get, computed } from "@ember/object";
 import { inject as service } from "@ember/service";
-import { main, files } from "config";
-import { isDebug } from "nwjs/debug";
+import { main as mainConfig } from "config";
 import SettingsNotification from "data/models/settings/notification/fragment";
 import NotificationData from "services/notification/data";
+import { iconGroup as icon } from "services/notification/icons";
 import { isSupported, showNotification } from "services/notification/provider";
-import { isWin } from "utils/node/platform";
-import resolvePath from "utils/node/resolvePath";
+import Logger from "utils/Logger";
 
 
-const { "display-name": displayName } = main;
-const { icons: { big: bigIcon } } = files;
+const { logError } = new Logger( "NotificationSettings" );
+
+
+const { "display-name": displayName } = mainConfig;
 const {
 	filter: contentNotificationFilter,
 	click: contentNotificationClick,
@@ -24,7 +25,8 @@ export default Controller.extend({
 	contentNotificationClick,
 	contentNotificationClickGroup,
 
-	i18n: service(),
+	/** @type {IntlService} */
+	intl: service(),
 
 	// filter available notification providers
 	contentNotificationProviders: computed(function() {
@@ -34,22 +36,18 @@ export default Controller.extend({
 
 	actions: {
 		testNotification( success, failure ) {
-			const i18n = get( this, "i18n" );
 			const provider = get( this, "model.notification.provider" );
-			const message = i18n.t( "settings.notifications.provider.test.message" ).toString();
-			const icon = isWin && !isDebug
-				? resolvePath( "%NWJSAPPPATH%", bigIcon )
-				: resolvePath( bigIcon );
+			const msg = this.intl.t( "settings.notifications.provider.test.message" ).toString();
 
 			const data = new NotificationData({
 				title: displayName,
-				icon: icon,
-				message
+				message: msg,
+				icon
 			});
 
 			showNotification( provider, data, true )
 				.then( success, failure )
-				.catch( () => {} );
+				.catch( err => logError( err ) );
 		}
 	}
 });

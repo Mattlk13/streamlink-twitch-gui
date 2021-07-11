@@ -9,30 +9,114 @@ module.exports = {
 		command: "chmod -R g=u,o=u,g-w,o-w <%= dir.releases %>/<%= package.name %>/linux64"
 	},
 
-	win32installer: {
+	// delete "product_string" field from package.json on macOS
+	// https://github.com/nwjs/nw.js/issues/7253
+	packagejson_osx64: {
+		cwd: [
+			"<%= dir.releases %>",
+			"<%= package.name %>",
+			"osx64",
+			"<%= package.name %>.app",
+			"Contents",
+			"Resources",
+			"app.nw"
+		].join( "/" ),
+		command: "str=\"$(jq 'del(.product_string)' package.json)\" && echo \"$str\" > package.json"
+	},
+
+	archive_win32: {
+		command: [
+			"bash '<%= dir.resources %>/archive/zip.sh'",
+			"'<%= compress.win32.input %>'",
+			"'<%= compress.win32.output %>'",
+			"'<%= compress.win32.prefix %>'"
+		].join( " " )
+	},
+	archive_win64: {
+		command: [
+			"bash '<%= dir.resources %>/archive/zip.sh'",
+			"'<%= compress.win64.input %>'",
+			"'<%= compress.win64.output %>'",
+			"'<%= compress.win64.prefix %>'"
+		].join( " " )
+	},
+	archive_osx64: {
+		command: [
+			"bash '<%= dir.resources %>/archive/tar-gzip.sh'",
+			"'<%= compress.osx64.input %>'",
+			"'<%= compress.osx64.output %>'",
+			"'<%= compress.osx64.prefix %>'"
+		].join( " " )
+	},
+	archive_linux32: {
+		command: [
+			"bash '<%= dir.resources %>/archive/tar-gzip.sh'",
+			"'<%= compress.linux32.input %>'",
+			"'<%= compress.linux32.output %>'",
+			"'<%= compress.linux32.prefix %>'"
+		].join( " " )
+	},
+	archive_linux64: {
+		command: [
+			"bash '<%= dir.resources %>/archive/tar-gzip.sh'",
+			"'<%= compress.linux64.input %>'",
+			"'<%= compress.linux64.output %>'",
+			"'<%= compress.linux64.prefix %>'"
+		].join( " " )
+	},
+
+	installer_win32: {
 		command: [
 			"mkdir -p \"<%= dir.tmp_installer %>\"",
 			"makensis -v3 \"<%= dir.tmp_installer %>/win32installer/installer.nsi\""
 		].join( " && " )
 	},
-
-	win64installer: {
+	installer_win64: {
 		command: [
 			"mkdir -p \"<%= dir.tmp_installer %>\"",
 			"makensis -v3 \"<%= dir.tmp_installer %>/win64installer/installer.nsi\""
 		].join( " && " )
 	},
 
-	compressMacOSarchive: {
+	appimage_linux32: {
 		command: [
-			"cd '<%= compress.osx64.cwd %>'",
-			"tar -czf"
-				+ " '<%= compress.osx64.options.archive %>'"
-				// use --transform feature of GNU tar to set the custom prefix path
-				// set flags=r to ignore prefix when archiving symlinks
-				// https://stackoverflow.com/a/29661783
-				+ " --transform 'flags=r;s,^,<%= compress.osx64.dest %>,'"
-				+ " *"
-		].join( " && " )
+			"bash '<%= dir.resources %>/appimage/build.sh'",
+			"'<%= package.name %>'",
+			"'<%= version %>'",
+			"'<%= appimage.linux32.image %>'",
+			"'<%= appimage.linux32.digest %>'",
+			"'<%= appimage.linux32.input %>'",
+			"'<%= appimage.linux32.output %>'",
+			"<%= appimage.linux32.dependencies.map(d=>`'${d}'`).join(' ') %>"
+		].join( " " )
+	},
+	appimage_linux64: {
+		command: [
+			"bash '<%= dir.resources %>/appimage/build.sh'",
+			"'<%= package.name %>'",
+			"'<%= version %>'",
+			"'<%= appimage.linux64.image %>'",
+			"'<%= appimage.linux64.digest %>'",
+			"'<%= appimage.linux64.input %>'",
+			"'<%= appimage.linux64.output %>'",
+			"<%= appimage.linux64.dependencies.map(d=>`'${d}'`).join(' ') %>"
+		].join( " " )
+	},
+
+	appimage_dependencies_linux32: {
+		command: [
+			"bash '<%= dir.resources %>/appimage/get-dependencies.sh'",
+			"'<%= appimage.linux32.image %>'",
+			"'<%= appimage.linux32.digest %>'",
+			"'<%= appimage.linux32.input %>'"
+		].join( " " )
+	},
+	appimage_dependencies_linux64: {
+		command: [
+			"bash '<%= dir.resources %>/appimage/get-dependencies.sh'",
+			"'<%= appimage.linux64.image %>'",
+			"'<%= appimage.linux64.digest %>'",
+			"'<%= appimage.linux64.input %>'"
+		].join( " " )
 	}
 };

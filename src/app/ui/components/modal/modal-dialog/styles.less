@@ -3,19 +3,8 @@
 
 
 .modal-dialog-component {
-	display: flex;
-	align-content: center;
-	justify-content: center;
-	align-items: center;
 	position: fixed;
-	left: 0;
-	right: 0;
-	top: 0;
-	bottom: 0;
 	z-index: 10000;
-	background: fade( #000, 50% );
-	opacity: 1;
-	animation: animFadeIn .333s ease-out 0s 1 normal;
 
 	> div {
 		display: flex;
@@ -32,7 +21,8 @@
 	}
 
 	&.fadeOut {
-		&,
+		z-index: 9999;
+
 		> div {
 			animation-direction: reverse;
 		}
@@ -42,9 +32,9 @@
 		}
 	}
 
-	.modal-body {
-		flex: 1 0;
+	.modal-body-component {
 		position: static;
+		flex: 1 0;
 		padding: 0;
 
 		i {
@@ -54,7 +44,7 @@
 		}
 	}
 
-	header {
+	.modal-header-component {
 		font-size: 2em;
 		font-weight: lighter;
 		margin-bottom: 1rem;
@@ -67,7 +57,7 @@
 		});
 	}
 
-	footer {
+	.modal-footer-component {
 		display: flex;
 		flex-flow: row nowrap;
 		justify-content: flex-start;

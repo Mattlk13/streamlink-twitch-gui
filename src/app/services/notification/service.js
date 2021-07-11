@@ -16,7 +16,8 @@ export default Service.extend(
 	NotificationServiceTrayMixin,
 	{
 		auth: service(),
-		i18n: service(),
+		/** @type {IntlService} */
+		intl: service(),
 		settings: service(),
 
 		error: false,
@@ -30,21 +31,23 @@ export default Service.extend(
 
 		init() {
 			this._super( ...arguments );
-			// read `running` on init and trigger the lazy computed property and its observers
+			// initialize lazy computed properties
+			get( this, "intl" );
 			get( this, "running" );
 		},
 
-		statusText: computed( "enabled", "paused", "error", function() {
-			const i18n = get( this, "i18n" );
-			const status = !get( this, "enabled" )
-				? "disabled"
-				: get( this, "paused" )
-					? "paused"
-					: get( this, "error" )
-						? "error"
-						: "enabled";
+		statusText: computed( "enabled", "paused", "error", "intl.locale", function() {
+			if ( !this.enabled ) {
+				return this.intl.t( "services.notification.status.disabled" ).toString();
+			}
+			if ( this.paused ) {
+				return this.intl.t( "services.notification.status.paused" ).toString();
+			}
+			if ( this.error ) {
+				return this.intl.t( "services.notification.status.error" ).toString();
+			}
 
-			return i18n.t( `services.notification.status.${status}` ).toString();
+			return this.intl.t( "services.notification.status.enabled" ).toString();
 		})
 	}
 );

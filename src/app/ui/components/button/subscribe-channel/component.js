@@ -1,4 +1,4 @@
-import { get, computed } from "@ember/object";
+import { computed } from "@ember/object";
 import { alias, and } from "@ember/object/computed";
 import { inject as service } from "@ember/service";
 import { twitch } from "config";
@@ -10,6 +10,9 @@ const { subscription: { "create-url": subscriptionCreateUrl } } = twitch;
 
 
 export default FormButtonComponent.extend( TwitchInteractButtonMixin, {
+	/** @type {IntlService} */
+	intl: service(),
+	/** @type {NwjsService} */
 	nwjs: service(),
 
 	modelName: "twitchSubscription",
@@ -32,18 +35,16 @@ export default FormButtonComponent.extend( TwitchInteractButtonMixin, {
 	iconSuccess : "fa-credit-card",
 	iconFailure : "fa-credit-card",
 
-	_title: computed( "i18n.locale", "isLoading", "isSuccessful", "name", function() {
-		if ( get( this, "isLoading" ) ) {
+	title: computed( "intl.locale", "isLoading", "isSuccessful", "name", function() {
+		if ( this.isLoading ) {
 			return "";
 		}
 
-		const i18n = get( this, "i18n" );
-		const key = get( this, "isSuccessful" )
-			? "components.subscribe-channel.title-renew"
-			: "components.subscribe-channel.title-new";
-		const name = get( this, "name" );
+		const { name } = this;
 
-		return i18n.t( key, { name } ).toString();
+		return this.isSuccessful
+			? this.intl.t( "components.subscribe-channel.title-renew", { name } ).toString()
+			: this.intl.t( "components.subscribe-channel.title-new", { name } ).toString();
 	}),
 
 	async action( success, failure ) {

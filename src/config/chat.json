@@ -109,30 +109,34 @@
 			}
 		]
 	},
-	"msie": {
+	"chatterino": {
 		"exec": {
-			"win32": "cscript.exe",
-			"darwin": false,
-			"linux": false
+			"win32": "chatterino.exe",
+			"darwin": "chatterino",
+			"linux": [
+				"chatterino",
+				"Chatterino-x86_64.AppImage"
+			]
 		},
 		"fallback": {
 			"win32": [
-				"%WINDIR%\\SysWOW64",
-				"%WINDIR%\\system32"
+				"%LOCALAPPDATA%\\Programs\\Chatterino",
+				"%PROGRAMFILES%\\Chatterino"
 			],
-			"darwin": false,
-			"linux": false
-		},
-		"data": {
-			"script": "%NWJSAPPPATH%\\msie-minimal.vbs"
+			"darwin": [
+				"/Applications/chatterino.app/Contents/MacOS"
+			],
+			"linux": [
+				"/usr/local/bin",
+				"/usr/bin"
+			]
 		},
 		"attributes": [
 			{
-				"name": "url",
-				"icon": "fa-link",
+				"name": "exec",
+				"icon": "fa-cog",
 				"type": "string",
-				"isUrl": true,
-				"defaultValue": "default"
+				"isFile": true
 			}
 		]
 	},

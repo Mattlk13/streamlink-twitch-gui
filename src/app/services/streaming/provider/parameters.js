@@ -23,10 +23,15 @@ export const parameters = [
 		"stream.customParameters"
 	),
 	new Parameter(
-		"--no-version-check"
+		"--twitch-disable-hosting"
 	),
 	new Parameter(
-		"--twitch-disable-hosting"
+		"--twitch-disable-ads",
+		"stream.disable_ads"
+	),
+	new Parameter(
+		"--twitch-low-latency",
+		"stream.low_latency"
 	),
 	new Parameter(
 		"--player",
@@ -56,10 +61,6 @@ export const parameters = [
 	new Parameter(
 		"--player-no-close",
 		"stream.settings.streaming.player_no_close"
-	),
-	new Parameter(
-		"--twitch-disable-ads",
-		"stream.settings.streaming.disable_ads"
 	),
 	new Parameter(
 		"--hls-live-edge",

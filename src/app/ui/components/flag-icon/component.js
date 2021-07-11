@@ -1,12 +1,13 @@
 import Component from "@ember/component";
-import { get, computed } from "@ember/object";
+import { computed } from "@ember/object";
 import { inject as service } from "@ember/service";
 import { langs } from "config";
 import "./styles.less";
 
 
 export default Component.extend({
-	i18n: service(),
+	/** @type {IntlService} */
+	intl: service(),
 
 	tagName: "i",
 	classNames: [ "flag-icon-component" ],
@@ -19,8 +20,7 @@ export default Component.extend({
 	withCursor: true,
 
 	flag: computed( "lang", function() {
-		const lang = get( this, "lang" );
-		const code = langs[ lang ];
+		const code = langs[ this.lang ];
 
 		return code
 			? `flag-${code.flag}`
@@ -28,19 +28,20 @@ export default Component.extend({
 	}),
 
 	title: computed( "withTitle", "lang", function() {
-		if ( !get( this, "withTitle" ) ) { return ""; }
-
-		const i18n = get( this, "i18n" );
-		const type = get( this, "type" );
-		const langId = get( this, "lang" );
-		const path = `languages.${langId}`;
-
-		if ( type !== "channel" && type !== "broadcaster" || !i18n.exists( path ) ) {
+		if ( !this.withTitle ) {
 			return "";
 		}
 
-		return i18n.t( `components.flag-icon.${type}`, {
-			lang: i18n.t( path ).toString()
-		}).toString();
+		const { intl, type, lang: langId } = this;
+		const path = `languages.${langId}`;
+		if ( type !== "channel" && type !== "broadcaster" || !intl.exists( path ) ) {
+			return "";
+		}
+
+		const lang = intl.t( path ).toString();
+
+		return type === "channel"
+			? intl.t( "components.flag-icon.channel", { lang } ).toString()
+			: intl.t( "components.flag-icon.broadcaster", { lang } ).toString();
 	})
 });

@@ -3,10 +3,10 @@ module.exports = [
 	require( "./code-quality" ),
 	require( "./nwjs" ),
 	require( "./ember" ),
-	require( "./moment" ),
 	require( "./app" ),
-	require( "./styles" ),
+	require( "./stylesheets-and-assets" ),
 	require( "./dev" ),
 	require( "./tests" ),
-	require( "./prod" )
+	require( "./i18n" ),
+	require( "./release" )
 ];

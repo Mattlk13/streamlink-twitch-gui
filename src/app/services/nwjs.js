@@ -8,13 +8,15 @@ import {
 	toggleVisibility,
 	toggleMaximized,
 	toggleMinimized,
-	toggleShowInTaskbar
+	toggleShowInTaskbar,
+	setFocused
 } from "nwjs/Window";
 import { ATTR_GUI_INTEGRATION_TRAY } from "data/models/settings/gui/fragment";
 
 
 const { hasOwnProperty } = {};
 const reVariable = /{(\w+)}/g;
+const modalCloseContext = {};
 
 
 export default Service.extend( /** @class NwjsService */ {
@@ -83,10 +85,13 @@ export default Service.extend( /** @class NwjsService */ {
 		toggleMaximized();
 	},
 
+	focus( focus = true ) {
+		setFocused( focus );
+	},
+
 	close() {
-		const streams = get( this, "streaming.model" ).toArray();
-		if ( streams.length && streams.some( stream => !get( stream, "hasEnded" ) ) ) {
-			get( this, "modal" ).openModal( "quit", this );
+		if ( this.streaming.hasStreams ) {
+			this.modal.openModal( "quit", modalCloseContext );
 		} else {
 			this.quit();
 		}

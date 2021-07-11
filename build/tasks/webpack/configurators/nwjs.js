@@ -1,8 +1,8 @@
-const { resolve } = require( "path" );
-const { pRoot, pTest } = require( "../paths" );
+const { resolve: r } = require( "path" );
+const { pApp, pTest } = require( "../paths" );
+const { isTestTarget } = require( "../utils" );
 
 const webpack = require( "webpack" );
-const CopyWebpackPlugin = require( "copy-webpack-plugin" );
 const HtmlWebpackPlugin = require( "html-webpack-plugin" );
 
 
@@ -10,48 +10,50 @@ const HtmlWebpackPlugin = require( "html-webpack-plugin" );
  * Configurations for creating valid NW.js builds
  */
 module.exports = {
-	_nwjs( config, path ) {
-		// NW.js package.json
-		config.plugins.push(
-			new CopyWebpackPlugin([
-				{ from: resolve( path, "package.json" ) }
-			])
-		);
+	common( config, grunt, target ) {
+		const path = isTestTarget( target )
+			? pTest
+			: pApp;
+		const isProd = target === "prod";
 
-		// generate the index.html
-		config.plugins.push(
-			new HtmlWebpackPlugin({
-				inject: "body",
-				hash: false,
-				template: resolve( path, "index.html" )
-			})
-		);
-	},
-
-	common( config ) {
 		// split chunks
 		config.plugins.unshift(
 			new webpack.optimize.SplitChunksPlugin()
 		);
-	},
 
-	dev( config ) {
-		this._nwjs( config, pRoot );
-	},
+		// NW.js package.json
+		config.module.rules.push({
+			type: "javascript/auto",
+			include: [
+				r( pApp, "package.json" ),
+				r( pTest, "package.json" )
+			],
+			use: [
+				{
+					loader: "file-loader",
+					options: {
+						name: "package.json"
+					}
+				},
+				{
+					loader: "parse-json-loader",
+					options: {
+						grunt
+					}
+				}
+			]
+		});
 
-	prod( config ) {
-		this._nwjs( config, pRoot );
-	},
-
-	test( config ) {
-		this._nwjs( config, pTest );
-	},
-
-	testdev( config ) {
-		this._nwjs( config, pTest );
-	},
-
-	coverage( config ) {
-		this._nwjs( config, pTest );
+		// generate the index.html
+		config.plugins.push(
+			new HtmlWebpackPlugin({
+				minify: isProd && {
+					collapseWhitespace: true
+				},
+				inject: "body",
+				hash: false,
+				template: r( path, "index.html" )
+			})
+		);
 	}
 };

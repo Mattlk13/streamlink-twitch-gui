@@ -1,6 +1,6 @@
 <div>
 	{{#modal-header}}
-		{{t "modal.changelog.header" version=version}}
+		{{t "modal.changelog.header" version=modalContext.version}}
 	{{/modal-header}}
 	{{#modal-body}}
 		{{t "modal.changelog.body"}}
@@ -11,7 +11,7 @@
 			classNames="btn-danger"
 			icon="fa-times"
 		}}
-			{{t "modal.action.close"}}
+			{{t "modal.dialog.action.close"}}
 		{{/form-button}}
 		{{#form-button
 			action=(action "showChangelog")

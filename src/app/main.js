@@ -1,3 +1,7 @@
+/* global DEVELOPMENT */
+// special NW.js package.json import (see webpack config)
+import "./package.json";
+
 
 global.process.removeAllListeners();
 
@@ -5,8 +9,8 @@ global.process.on( "uncaughtException", function( err ) {
 	// do nothing if window was fully initialized
 	if ( window && window.initialized ) { return; }
 
-	// show the app window and dev tools while being in debug mode
-	if ( DEBUG ) {
+	// show the app window and dev tools while running in development mode
+	if ( DEVELOPMENT ) {
 		try {
 			let nwWindow = require( "nw.gui" ).Window.get();
 			nwWindow.show();

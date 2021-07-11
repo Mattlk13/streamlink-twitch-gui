@@ -3,19 +3,20 @@ menu:
     main: Principal
     gui: Interface
     streaming: Streaming
-    player: Joueur
+    player: Lecteur
     streams: Streams
     chat: Chat
-    lists: Listes
     languages: Langages
+    hotkeys: Raccourcis
     notifications: Notifications
     channels: Chaînes
 main:
     language:
         title: Langue
         description: Sélectionnez la langue de l'interface.
+        notes: Parlez-vous une autre langue ? Aidez à traduire ! Lisez le Wiki pour plus d'informations.
         labels:
-            auto: "Système ({{label}})"
+            auto: "Système ({label})"
     advanced:
         title: Réglages et fonctionnalités
         description: Activer les paramètres et fonctions cachés.<br>Ne s'applique pas seulement au menu Paramètres.
@@ -44,7 +45,7 @@ gui:
         title: Intégration avec l'OS
         description: À partir d'où accèder à l'interface.
         values:
-            both: Both
+            both: Les deux barres
             taskbar: Barre des programmes
             tray: Barre des tâchs
     minimize:
@@ -82,10 +83,10 @@ streaming:
         description: Choisissez un fournisseur de streaming et définissez des emplacements exécutables personnalisés.
         notes: Un chemin explicite doit être défini si le fichier ne peut pas être trouvé dans la variable d'environnement $PATH du système ou dans la liste des chemins de repli de l'interface.
         executable:
-            python: Éxcutable Python
-            streamlinkw: Éxcutable Streamlink
+            streamlink: Éxcutable Streamlink
+            streamlink-python: Éxcutable Python
         python-script:
-            streamlink: Script python Streamlink
+            streamlink-python: Script python Streamlink
         parameters:
             title: Paramètres personnalisés
             placeholder: Ajouter des paramètres personnalisés
@@ -106,6 +107,11 @@ streaming:
             passthrough:
                 label: HLS (passthrough)
                 description: Laisse le lecteur lui-même télécharger et mettre en tampon le stream
+    low-latency:
+        title: Streaming en latence basse
+        description: Reduit le délai du stream pour les chaînes qui streament avec le mode latence basse.
+        notes: Soyez conscient que l'activation de cette option définira également la valeur de live-edge sur 2 si elle est supérieure, ce qui peut entraîner une mise en mémoire tampon pour les streams réguliers. Pour atteindre la latence la plus faible possible, il faut encore peaufiner les paramètres de mise en cache / mise en mémoire tampon du lecteur.
+        checkbox: Enable low latency streaming
     hls-live-edge:
         title: HLS live edge
         description: Diminuer la valeur réduira la latence du flux, mais peut également provoquer une mise en mémoire tampon. Selon la configuration du lecteur, il peut y avoir une autre couche de mémoire tampon.
@@ -115,7 +121,7 @@ streaming:
     player-no-close:
         title: Garder la fenêtre du lecteur
         description: Après la fin du stream.
-        notes: Le lecteur lui-même peut empêcher {{provider}}} de le fermer. Veuillez également consulter les paramètres du lecteur.
+        notes: Le lecteur lui-même peut empêcher {provider}} de le fermer. Veuillez également consulter les paramètres du lecteur.
         checkbox: Ne pas fermer la fenêtre du lecteur
     disable-ads:
         title: Publicité
@@ -233,10 +239,6 @@ streams:
         description: Définir des sélections de qualité précises par plage ou en utilisant des noms de qualité explicites.
         notes : La deuxième colonne affiche la sélection de la qualité réelle. Les qualités ou les gammes de qualité de la première colonne seront exclues des alias de sélection "best" ou "worst". Veuillez consulter le wiki et la documentation de Streamlink avant d'apporter des modifications.
         dont-exclude: Ne pas exclure les qualités de streaming
-    vodcast-regexp:
-        title: Filtrage Vodcast personnalisé
-        description: Trouver des Vodcast/Rebroadcasts non-taggés.
-        notes: Une expression régulière conforme à JavaScript (insensible à la casse), appliquée au titre du flux. Pour désactiver le filtrage, entrez une chaîne vide ou une expression régulière invalide.
     modal-close-launch:
         title: Masquer la popup de stream
         description: Quand un stream commence.
@@ -245,6 +247,51 @@ streams:
         title: Fermer la popup de stream
         description: Quand un stream est terminé.
         checkbox: Fermer la popup d'un stream actif lorsqu'il se termine
+    channelname:
+        title: Nom de chaînes personnalisés
+        description: Emplacements des noms de chaînes.
+        values:
+            custom: Afficher les noms personnalisés
+            original: Afficher les noms originaux
+            both: Afficher les deux
+    show-flag:
+        title: Drapeaux
+        description: Indiquer la langue du streamer
+        checkbox: Drapeaux toujours visibles
+    filter-vodcast:
+        title: Fondu enchainé Vodcasts
+        description: Rend les vodcasts moins visibles, comme indicateur supplémentaire.
+        checkbox: Fondu enchainé Vodcasts
+    vodcast-regexp:
+        title: Filtrage Vodcast personnalisé
+        description: Trouver des Vodcast/Rebroadcasts non-taggés.
+        notes: Une expression régulière conforme à JavaScript (insensible à la casse), appliquée au titre du flux. Pour désactiver le filtrage, entrez une chaîne vide ou une expression régulière invalide.
+    show-info:
+        title: Barre d'infos
+        description: Barre du bas à l'intérieur de l'aperçu du stream.
+        checkbox: Barre d'infos toujours visible
+    info:
+        title: Contenu de la barre d'infos
+        description: Quoi afficher ?
+        values:
+            game: Le jeu joué
+            title: Le titre du stream
+    uptime-hours-only:
+        title: Format de durée de stream
+        description: Afficher la durée du stream en heures ou jours.
+        checkbox: Ignorer les jours et additionner les heures
+    click:
+        title: Comportement du clic
+        description: Actions supplémentaires lors du clic sur l'image de stream.
+        ctrl: CTRL + clic gauche
+        cmd: CMD + clic gauche
+        middle: Clic molette de la souris
+        values:
+            noop: Ne rien faire
+            launch: Lancer le stream
+            chat: Ouvrir le chat
+            channel: Aller sur la page de la chaîne
+            settings: Aller dans les paramètres de la chaîne
 chat:
     provider:
         title: Application de chat
@@ -299,12 +346,12 @@ chat:
                     url:
                         title: URL du chat
                         description: Quel URL du chat Twitch utiliser
-            msie:
-                label: Internet Explorer
+            chatterino:
+                label: Chatterino
                 attributes:
-                    url:
-                        title: URL du chat
-                        description: Quel URL du chat Twitch utiliser
+                    exec:
+                        title: Exécutable Chatterino
+                        description: Définir un chemin personnalisé vers l'exécutable Chatterino.
             chatty:
                 label: Chatty
                 attributes:
@@ -363,62 +410,90 @@ chat:
         title: Emotes Twitch
         description: Le bouton qui ouvre twitchemotes.com.
         checkbox: Afficher les boutons d'emotes dans la popup du stream
-lists:
-    channelname:
-        title: Nom de chaînes personnalisés
-        description: Emplacements des noms de chaînes.
-        values:
-            custom: Afficher les noms personnalisés
-            original: Afficher les noms originaux
-            both: Afficher les deux
-    show-flag:
-        title: Drapeaux
-        description: Indiquer la langue du streamer
-        checkbox: Drapeaux toujours visibles
-    filter-vodcast:
-        title: Fondu enchainé Vodcasts
-        description: Rend les vodcasts moins visibles, comme indicateur supplémentaire.
-        checkbox: Fondu enchainé Vodcasts
-    show-info:
-        title: Barre d'infos
-        description: Barre du bas à l'intérieur de l'aperçu du stream.
-        checkbox: Barre d'infos toujours visible
-    info:
-        title: Contenu de la barre d'infos
-        description: Quoi afficher ?
-        values:
-            game: Le jeu joué
-            title: Le titre du stream
-    click:
-        title: Comportement du clic
-        description: Actions supplémentaires lors du clic sur l'image de stream.
-        ctrl: CTRL + clic gauche
-        cmd: CMD + clic gauche
-        middle: Clic molette de la souris
-        values:
-            noop: Ne rien faire
-            launch: Lancer le stream
-            chat: Ouvrir le chat
-            channel: Aller sur la page de la chaîne
-            settings: Aller dans les paramètres de la chaîne
 languages:
     filter:
         title: Filtrer les streams
         description: Filter toutes les listes de streams selon la langue (sauf pour les streams suivis).
-        notes: N'affecte pas le menu 'Streams live' de la section 'Mes'
         values:
             fade:
                 text: Faire disparaitre les streams
-                description: Afficher tous les streams, faire disparaitre ceux qui ne correpondent pas au filtre de langage.
+                # FIXME
+                description: |
+                    Afficher tous les streams, faire disparaitre ceux qui ne correpondent pas au filtre de langage.<br>
+                    Requires at least one selection and filtering needs to be disabled.
             filter:
-                text: Filtrer les stream
-                description: N'afficher que les stream qui correspondent au filtre de langage.
+                text: Filtrer les streams
+                # FIXME
+                description: |
+                    N'afficher que les streams qui correspondent au filtre de langage.<br>
+                    Requires exactly one selection and takes precedence over fading.
     languages:
         title: Langages
         description: Langue du streamer, ou si non-défini, la langue de la chaîne.
-        notes: Selectionnez tous les langages pour désasctiver le filtrage.
-        check-all: Tout cocher
         uncheck-all: Tout décocher
+hotkeys:
+    navigation:
+        title: Navigation
+        description: Raccourcis clavier globaux de navigation.
+        notes: |
+            Les raccourcis clavier sont classés en fonction des actions de leur composant respectif. Chaque action a un raccourci clavier principal et secondaire, qui peuvent être activés et désactivés individuellement, et peuvent également être modifiés via un raccourci clavier personnalisé. La fenêtre de l'application doit être focalisée pour que les raccourcis clavier se déclenchent. <br> <br>
+            Veuillez également noter que les raccourcis clavier ignorent actuellement la disposition du clavier du système (pour des raisons techniques). Cela signifie que tous les raccourcis clavier sont pour l'instant basés sur la disposition du clavier américain par défaut (QWERTY) et que les touches individuelles peuvent être affichées de manière incorrecte sur les systèmes utilisant une disposition différente.
+        actions:
+            refresh: Actualiser la page actuelle
+            historyBack: Reculer d'une page
+            historyForward: Avancer d'une page
+            homepage: Accéder à la page d'accueil
+            routeFeatured: Accéder à la page des Chaînes mises en avant
+            routeGames: Accéder à la page des Jeux
+            routeStreams: Accéder à la page des Streams
+            routeUserFollowedStreams: Accéder à la page des Streams suivis
+            routeUserFollowedChannels: Accéder à la page des Chaînes suivies
+            routeUserAuth: Accéder à la page Utilisateur
+            routeWatching: Accéder à la page des Streams en cours de visualisation
+            routeSettings: Accéder à la page des Paramètres
+            routeAbout: Accéder à la page À propos
+    searchbar:
+        title: Barre de recherche
+        description: Barre de recherche en haut.
+        actions:
+            focus: Focaliser
+    followbutton:
+        title: Bouton Suivre
+        description: Le bouton de suivi sur la page d'une chaîne ou dans la boîte de dialogue de streaming.
+        actions:
+            default: Suivre ou Ne plus suivre
+            confirm: Confirmer
+    openchatbutton:
+        title: Bouton Ouvrir le chat
+        description: Le bouton ouvrir le chat sur la page d'une chaîne ou dans la boîte de dialogue de streaming.
+        actions:
+            default: Ouvrir le chat
+    sharechannelbutton:
+        title: Bouton Partager la chaîne
+        description: Le bouton partager sur la page d'une chaîne ou dans la boîte de dialogue de streaming.
+        actions:
+            default: Copier l'URL de la chaîne dans le presse-papier
+    twitchemotesbutton:
+        title: Bouton Twitch emotes
+        description: Le bouton emotes sur la page d'une chaîne ou dans la boîte de dialogue de streaming.
+        actions:
+            default: Ouvrir Twitchemotes.com
+    modaldialog:
+        title: Boîte de dialogue modale
+        description: Boîtes de dialogue contextuelles génériques.
+        actions:
+            close: Fermer
+    modalconfirm:
+        title: Confirmer la boîte de dialogue
+        description: Quand une certaine action a besoin d'être confirmée.
+        actions:
+            confirm: Confirmer
+    modalstreaming:
+        title: Boîte de dialogue Streaming
+        description: Quand un stream est en cours de visualisation.
+        actions:
+            shutdown: Fermer le stream actuel
+            log: Activer/Désactiver les logs Streamlink
 notifications:
     enabled:
         title: Notifications

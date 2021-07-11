@@ -17,11 +17,7 @@
 	{{#each-in providers as |key provider|}}
 		<dl class="streaming-providers-list {{unless (is-equal key model.streaming.provider) 'hidden'}}">
 			<dt>
-				{{#if provider.python}}
-					{{t "settings.streaming.provider.executable.python"}}
-				{{else}}
-					{{t (concat "settings.streaming.provider.executable." key)}}
-				{{/if}}
+				{{t (concat "settings.streaming.provider.executable." key)}}
 			</dt>
 			<dd>
 				{{file-select
@@ -71,15 +67,30 @@
 		content=contentStreamingPlayerInput
 		as |item|
 	}}
-		<div class="input-btn-with-description">
-			{{item.button label=(t (concat "settings.streaming.playerinput.values." item.value ".label"))}}
-			<p class="description">{{t (concat "settings.streaming.playerinput.values." item.value ".description")}}</p>
+		<div>
+			{{item.button
+				label=(t (concat "settings.streaming.playerinput.values." item.value ".label"))
+				description=(t (concat "settings.streaming.playerinput.values." item.value ".description"))
+			}}
 		</div>
 	{{/radio-buttons}}
 {{/settings-row}}
 </fieldset>
 
 <fieldset>
+{{#settings-row
+	(t "settings.streaming.low-latency.title")
+	(t "settings.streaming.low-latency.description")
+	icon="fa-compress"
+	notes=(t "settings.streaming.low-latency.notes")
+	documentation="--twitch-low-latency"
+}}
+	{{check-box
+		(t "settings.streaming.low-latency.checkbox")
+		checked=model.streaming.low_latency
+	}}
+{{/settings-row}}
+
 {{#settings-row
 	(t "settings.streaming.hls-live-edge.title")
 	(t "settings.streaming.hls-live-edge.description")

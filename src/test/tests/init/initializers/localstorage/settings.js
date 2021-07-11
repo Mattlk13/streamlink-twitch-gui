@@ -9,15 +9,15 @@ module( "init/initializers/localstorage/settings", {
 
 		const { default: updateSettings } = updateSettingsInjector({
 			config: {
+				streaming: {
+					"default-provider": "streamlink"
+				},
 				players: {},
 				langs: {
 					de: {},
 					en: {},
 					fr: { disabled: true }
 				}
-			},
-			"data/models/settings/streaming/fragment": {
-				defaultProvider: "streamlink"
 			},
 			"data/models/settings/streaming/player/fragment": {
 				typeKey: "type"
@@ -85,9 +85,6 @@ test( "Removes old attributes", function( assert ) {
 				},
 				"streamlink": {
 					exec: "baz"
-				},
-				"streamlinkw": {
-					exec: "qux"
 				}
 			},
 			qualitiesOld: {
@@ -108,9 +105,6 @@ test( "Removes old attributes", function( assert ) {
 				providers: {
 					streamlink: {
 						exec: "baz"
-					},
-					streamlinkw: {
-						exec: "qux"
 					}
 				}
 			},
@@ -259,7 +253,8 @@ test( "Updates attributes", function( assert ) {
 				chat_open_context: false,
 				twitchemotes: false,
 				filter_vodcast: true,
-				filter_languages: true,
+				languages_fade: false,
+				languages_filter: true,
 				languages: {
 					de: true,
 					en: true
@@ -341,14 +336,7 @@ test( "Fixes attributes", function( assert ) {
 		streaming: {
 			quality: 1
 		},
-		streams: {
-			languages: {
-				de: true,
-				en: false,
-				fr: true,
-				nl: true
-			}
-		},
+		streams: {},
 		chat: {
 			provider: "default"
 		},
@@ -376,12 +364,7 @@ test( "Fixes attributes", function( assert ) {
 					}
 				}
 			},
-			streams: {
-				languages: {
-					de: true,
-					en: false
-				}
-			},
+			streams: {},
 			chat: {
 				provider: "browser"
 			},
@@ -504,6 +487,148 @@ test( "Fixes attributes", function( assert ) {
 			notification: {}
 		},
 		"Changes streaming provider from livestreamer to default value (streamlink)"
+	);
+
+	const streamingProviderStreamlinkw = {
+		streaming: {
+			provider: "streamlinkw",
+			providers: {
+				"streamlink": {
+					exec: "foo",
+					params: "bar",
+					pythonscript: "baz"
+				},
+				"streamlinkw": {
+					exec: "qux",
+					params: "quux",
+					pythonscript: null
+				}
+			}
+		}
+	};
+	updateSettings( streamingProviderStreamlinkw );
+	assert.propEqual(
+		streamingProviderStreamlinkw,
+		{
+			gui: {},
+			streaming: {
+				provider: "streamlink",
+				providers: {
+					"streamlink": {
+						exec: "qux",
+						params: "quux",
+						pythonscript: null
+					},
+					"streamlink-python": {
+						exec: "foo",
+						params: "bar",
+						pythonscript: "baz"
+					}
+				}
+			},
+			streams: {},
+			chat: {},
+			notification: {}
+		},
+		"Fixes streamlinkw streaming provider data"
+	);
+
+	const streamsFilterLanguageFade = {
+		streams: {
+			filter_languages: 1,
+			language: "en"
+		}
+	};
+	updateSettings( streamsFilterLanguageFade );
+	assert.propEqual(
+		streamsFilterLanguageFade,
+		{
+			gui: {},
+			streaming: {},
+			streams: {
+				languages_fade: true,
+				languages_filter: false,
+				languages: {
+					de: false,
+					en: true
+				}
+			},
+			chat: {},
+			notification: {}
+		},
+		"Translates old language filter with attribute number 1"
+	);
+
+	const streamsFilterLanguageFilter = {
+		streams: {
+			filter_languages: 2,
+			language: "de"
+		}
+	};
+	updateSettings( streamsFilterLanguageFilter );
+	assert.propEqual(
+		streamsFilterLanguageFilter,
+		{
+			gui: {},
+			streaming: {},
+			streams: {
+				languages_fade: false,
+				languages_filter: true,
+				languages: {
+					de: true,
+					en: false
+				}
+			},
+			chat: {},
+			notification: {}
+		},
+		"Translates old language filter with attribute number 2"
+	);
+
+	const streamsFilterLanguageFilterBoolean = {
+		streams: {
+			filter_languages: true,
+			language: "de"
+		}
+	};
+	updateSettings( streamsFilterLanguageFilterBoolean );
+	assert.propEqual(
+		streamsFilterLanguageFilterBoolean,
+		{
+			gui: {},
+			streaming: {},
+			streams: {
+				languages_fade: false,
+				languages_filter: true,
+				languages: {
+					de: true,
+					en: false
+				}
+			},
+			chat: {},
+			notification: {}
+		},
+		"Translates old language filter with boolean value"
+	);
+
+	const chatProviderMsie = {
+		chat: {
+			provider: "msie"
+		}
+	};
+	updateSettings( chatProviderMsie );
+	assert.propEqual(
+		chatProviderMsie,
+		{
+			gui: {},
+			streaming: {},
+			streams: {},
+			chat: {
+				provider: "browser"
+			},
+			notification: {}
+		},
+		"Updates removed chat providers to \"browser\""
 	);
 
 	const notificationProviderRich = {

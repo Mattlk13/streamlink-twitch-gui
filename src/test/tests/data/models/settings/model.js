@@ -1,121 +1,103 @@
 import { module, test } from "qunit";
-import { buildOwner, runDestroy } from "test-utils";
+import { setupTest } from "ember-qunit";
+import { buildResolver } from "test-utils";
 import { setupStore } from "store-utils";
-import { get, set } from "@ember/object";
-import { sendEvent } from "@ember/object/events";
-import { run } from "@ember/runloop";
-import attr from "ember-data/attr";
-import { fragment } from "ember-data-model-fragments/attributes";
+
+import { set } from "@ember/object";
 import Fragment from "ember-data-model-fragments/fragment";
-import ModelFragmentsInitializer from "init/initializers/model-fragments";
+import { fragment } from "ember-data-model-fragments/attributes";
 
 import Settings from "data/models/settings/model";
+import settingsStreamsLanguagesInjector
+	from "inject-loader?config!data/models/settings/streams/languages/fragment";
+import ModelFragmentsInitializer from "init/initializers/model-fragments";
 
 
-module( "data/models/settings", {
-	beforeEach() {
-		const owner = this.owner = buildOwner();
-
-		ModelFragmentsInitializer.initialize( owner );
-
-		owner.register( "model:settings", Settings );
-		owner.register( "model:settings-gui", Fragment.extend() );
-		owner.register( "model:settings-streaming", Fragment.extend() );
-		owner.register( "model:settings-streams", Fragment.extend({
-			languages: fragment( "settings-streams-languages", { defaultValue: {} } )
-		}) );
-		owner.register( "model:settings-streams-languages", Fragment.extend({
-			de: attr( "boolean", { defaultValue: false } ),
-			en: attr( "boolean", { defaultValue: false } ),
-			fr: attr( "boolean", { defaultValue: false } )
-		}) );
-		owner.register( "model:settings-chat", Fragment.extend() );
-		owner.register( "model:settings-notification", Fragment.extend() );
-
-		this.env = setupStore( this.owner );
-	},
-
-	afterEach() {
-		runDestroy( this.owner );
-	}
-});
-
-
-test( "Serializer", function( assert ) {
-
-	const settings = this.env.store.createRecord( "settings", {
-		id: 1
+module( "data/models/settings", function( hooks ) {
+	setupTest( hooks, {
+		resolver: buildResolver({
+			Settings,
+			SettingsGui: Fragment.extend(),
+			SettingsHotkeys: Fragment.extend(),
+			SettingsStreaming: Fragment.extend(),
+			SettingsStreams: Fragment.extend({
+				languages: fragment( "settings-streams-languages", { defaultValue: {} } )
+			}),
+			SettingsChat: Fragment.extend(),
+			SettingsNotification: Fragment.extend()
+		})
 	});
 
-	assert.deepEqual(
-		settings.toJSON(),
-		{
-			advanced: false,
-			gui: {},
-			streaming: {},
+	hooks.beforeEach(function() {
+		const { default: SettingsStreamsLanguages } = settingsStreamsLanguagesInjector({
+			config: {
+				langs: {
+					de: { disabled: false },
+					en: { disabled: false },
+					fr: { disabled: true }
+				}
+			}
+		});
+		this.owner.register( "model:settings-streams-languages", SettingsStreamsLanguages );
+	});
+
+	hooks.beforeEach(function() {
+		setupStore( this.owner );
+
+		ModelFragmentsInitializer.initialize( this.owner );
+	});
+
+
+	test( "Serializer", function( assert ) {
+		const store = this.owner.lookup( "service:store" );
+		const settings = store.createRecord( "settings", {
+			id: 1
+		});
+
+		assert.propEqual(
+			settings.toJSON(),
+			{
+				advanced: false,
+				gui: {},
+				hotkeys: {},
+				streaming: {},
+				streams: {
+					languages: {
+						de: false,
+						en: false
+					}
+				},
+				chat: {},
+				notification: {}
+			},
+			"Settings serialize correctly"
+		);
+	});
+
+	test( "Language selection", function( assert ) {
+		const store = this.owner.lookup( "service:store" );
+		const settings = store.createRecord( "settings", {
+			id: 1,
 			streams: {
 				languages: {
 					de: false,
-					en: false,
-					fr: false
+					en: true
 				}
-			},
-			chat: {},
-			notification: {}
-		},
-		"Settings serialize correctly"
-	);
-
-});
-
-
-test( "hasStreamsLanguagesSelection on didUpdate", function( assert ) {
-
-	const settings = this.env.store.createRecord( "settings", { id: 1 } );
-
-	assert.notOk(
-		get( settings, "hasStreamsLanguagesSelection" ),
-		"Doesn't have a custom language selection"
-	);
-
-	set( settings, "streams.languages.de", true );
-	sendEvent( settings, "didUpdate" );
-
-	assert.ok(
-		get( settings, "hasStreamsLanguagesSelection" ),
-		"Does have a custom language selection now"
-	);
-
-	set( settings, "streams.languages.en", true );
-	sendEvent( settings, "didUpdate" );
-
-	assert.ok(
-		get( settings, "hasStreamsLanguagesSelection" ),
-		"Does still have a custom language selection"
-	);
-
-	set( settings, "streams.languages.fr", true );
-	sendEvent( settings, "didUpdate" );
-
-	assert.notOk(
-		get( settings, "hasStreamsLanguagesSelection" ),
-		"Doesn't have a custom language selection anymore"
-	);
-
-	const settingsTwo = run( () => this.env.store.createRecord( "settings", {
-		id: 2,
-		streams: {
-			languages: {
-				de: false,
-				en: true,
-				fr: false
 			}
-		}
-	}) );
+		});
 
-	assert.ok(
-		get( settingsTwo, "hasStreamsLanguagesSelection" ),
-		"Finds initial custom language selection"
-	);
+		assert.ok( settings.hasAnyStreamsLanguagesSelection, "Has a language selection" );
+		assert.ok( settings.hasSingleStreamsLanguagesSelection, "Has a single language selection" );
 
+		set( settings, "streams.languages.de", true );
+		settings.trigger( "didUpdate" );
+		assert.ok( settings.hasAnyStreamsLanguagesSelection, "Has a language selection" );
+		assert.notOk( settings.hasSingleStreamsLanguagesSelection, "Has two language selections" );
+
+		set( settings, "streams.languages.de", false );
+		set( settings, "streams.languages.en", false );
+		settings.trigger( "didUpdate" );
+		assert.notOk( settings.hasAnyStreamsLanguagesSelection, "Has no language selections" );
+		assert.notOk( settings.hasSingleStreamsLanguagesSelection, "Has no language selections" );
+	});
 });

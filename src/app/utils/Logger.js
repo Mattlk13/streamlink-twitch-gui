@@ -1,4 +1,3 @@
-import Moment from "moment";
 import { log as logConfig } from "config";
 import { argv, ARG_LOGFILE, ARG_LOGLEVEL } from "nwjs/argv";
 import { isDebug } from "nwjs/debug";
@@ -6,12 +5,13 @@ import process from "nwjs/process";
 import { logdir } from "utils/node/platform";
 import mkdirp from "utils/node/fs/mkdirp";
 import clearfolder from "utils/node/fs/clearfolder";
+import { promises as fsPromises } from "fs";
 import { join } from "path";
-import { appendFile as fsAppendFile } from "fs";
 import { promisify } from "util";
 
 
-const { filename, maxAgeDays } = logConfig;
+const { maxAgeDays } = logConfig;
+const { appendFile } = fsPromises;
 
 
 export const LOG_LEVEL_NONE = "none";
@@ -44,12 +44,6 @@ export const LISTEN_TO_DEBUG = idxLevel >= LOG_LEVELS.indexOf( LOG_LEVEL_DEBUG )
  * @type {Function}
  * @returns {Promise}
  */
-const appendFile = promisify( fsAppendFile );
-
-/**
- * @type {Function}
- * @returns {Promise}
- */
 const writeStdOut = promisify( process.stdout.write.bind( process.stdout ) );
 
 /**
@@ -59,7 +53,11 @@ const writeStdOut = promisify( process.stdout.write.bind( process.stdout ) );
 const writeStdErr = promisify( process.stderr.write.bind( process.stderr ) );
 
 
-const logFileName = new Moment().format( filename );
+const logFileName = new Date().toISOString().replace(
+	/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}).*/,
+	( _, year, month, day, hours, minutes, seconds ) =>
+		`${year}-${month}-${day}_${hours}-${minutes}-${seconds}.log`
+);
 let logFilePath;
 
 
