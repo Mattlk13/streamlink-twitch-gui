@@ -9,7 +9,7 @@
 		"url": "https://github.com/streamlink/streamlink-twitch-gui.git"
 	},
 	"dependencies": {
-		"bootstrap": "3.3.1",
+		"bootstrap": "3.4.1",
 		"ember-source": "3.7.1",
 		"ember-data": "3.9.0",
 		"ember-data-model-fragments": "4.0.0",
