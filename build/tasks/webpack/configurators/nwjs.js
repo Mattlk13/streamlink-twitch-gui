@@ -31,6 +31,7 @@ module.exports = {
 			generator: {
 				filename: "package.json"
 			},
+			sideEffects: true, // required since webpack 5.105.0
 			use: {
 				loader: "parse-json-loader",
 				options: {
